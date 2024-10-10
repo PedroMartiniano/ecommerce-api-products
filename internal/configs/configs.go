@@ -23,6 +23,12 @@ func Init() {
 		logger.Errorf("Error initializing database, error: %v", err)
 		panic(err)
 	}
+
+	err = InitMigrations()
+	if err != nil {
+		logger.Errorf("Error running migrations, error: %v", err)
+		panic(err)
+	}
 }
 
 func GetLogger() *Logger {
