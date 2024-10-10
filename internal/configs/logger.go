@@ -19,12 +19,13 @@ func newLogger() *Logger {
 	writer := io.Writer(os.Stdout)
 
 	greenLog := color.New(color.FgGreen).SprintFunc()
+	blueLog := color.New(color.FgBlue).SprintFunc()
 	yellowLog := color.New(color.FgYellow).SprintFunc()
 	redLog := color.New(color.FgRed).SprintFunc()
 
 	return &Logger{
 		debug: log.New(writer, greenLog("DEBUG: "), log.Ldate|log.Ltime),
-		info:  log.New(writer, greenLog("INFO: "), log.Ldate|log.Ltime),
+		info:  log.New(writer, blueLog("INFO: "), log.Ldate|log.Ltime),
 		warn:  log.New(writer, yellowLog("WARN: "), log.Ldate|log.Ltime),
 		err:   log.New(writer, redLog("ERROR: "), log.Ldate|log.Ltime),
 	}

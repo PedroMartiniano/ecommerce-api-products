@@ -1,4 +1,4 @@
-package repositories
+package irepositories
 
 import (
 	"context"
@@ -11,5 +11,5 @@ type IProductsRepository interface {
 	FindById(context.Context, string) (models.Products, error)
 	List(context.Context) ([]models.Products, error)
 	Update(context.Context, models.Products) (models.Products, error)
-	Delete(context.Context, models.Products) (models.Products, error)
+	Delete(context.Context, string) error
 }

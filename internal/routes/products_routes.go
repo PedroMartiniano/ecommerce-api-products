@@ -7,8 +7,12 @@ import (
 )
 
 func productsRoutes(router *gin.RouterGroup) {
-	productsService := adapters.NewUserServiceAdapter()
+	productsService := adapters.NewProductsServiceAdapter()
 	productsController := controllers.NewProductsController(productsService)
 
-	router.POST("/", productsController.CreateHandler)
+	router.POST("/", productsController.CreateProductHandler)
+	router.GET("/", productsController.ListProductsHandler)
+	router.GET("/:id", productsController.GetProductByIDHandler)
+	router.PUT("/:id", productsController.UpdateProductHandler)
+	router.DELETE("/:id", productsController.DeleteProductHandler)
 }
