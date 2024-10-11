@@ -7,6 +7,6 @@ import (
 )
 
 type IStocksRepository interface {
-	Create(context.Context, models.Stocks) (models.Stocks, error)
-	Update(context.Context, models.Stocks) (models.Stocks, error)
+	Create(context.Context, models.Stock) (models.Stock, error)
+	Update(context.Context, models.Stock) (models.Stock, error)
 }

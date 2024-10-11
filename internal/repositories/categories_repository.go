@@ -4,11 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
+
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/configs"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/models"
 	pr "github.com/PedroMartiniano/ecommerce-api-products/internal/ports/irepositories"
 	"github.com/google/uuid"
-	"time"
 )
 
 type categoriesRepository struct {
@@ -21,7 +22,7 @@ func NewCategoriesRepository(db *sql.DB) pr.ICategoriesRepository {
 	}
 }
 
-func (c categoriesRepository) Create(ctx context.Context, category models.Categories) (models.Categories, error) {
+func (c categoriesRepository) Create(ctx context.Context, category models.Category) (models.Category, error) {
 	query := `INSERT INTO categories(id, name, description, created_at, updated_at) VALUES($1, $2, $3, $4, $5)`
 
 	category.CreatedAt = time.Now()
@@ -39,13 +40,13 @@ func (c categoriesRepository) Create(ctx context.Context, category models.Catego
 		category.UpdatedAt,
 	)
 	if err != nil {
-		return models.Categories{}, configs.NewError(configs.ErrInternalServer, err)
+		return models.Category{}, configs.NewError(configs.ErrInternalServer, err)
 	}
 
 	return category, nil
 }
 
-func (c categoriesRepository) FindById(ctx context.Context, id string) (models.Categories, error) {
+func (c categoriesRepository) FindById(ctx context.Context, id string) (models.Category, error) {
 	query := `SELECT id, name, description, created_at, updated_at FROM categories WHERE id = $1`
 
 	row := c.db.QueryRowContext(
@@ -54,7 +55,7 @@ func (c categoriesRepository) FindById(ctx context.Context, id string) (models.C
 		id,
 	)
 
-	category := models.Categories{}
+	category := models.Category{}
 
 	err := row.Scan(
 		&category.ID,
@@ -65,26 +66,26 @@ func (c categoriesRepository) FindById(ctx context.Context, id string) (models.C
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return models.Categories{}, configs.NewError(configs.ErrNotFound, err)
+			return models.Category{}, configs.NewError(configs.ErrNotFound, err)
 		}
-		return models.Categories{}, configs.NewError(configs.ErrInternalServer, err)
+		return models.Category{}, configs.NewError(configs.ErrInternalServer, err)
 	}
 
 	return category, nil
 }
 
-func (c categoriesRepository) List(ctx context.Context) ([]models.Categories, error) {
+func (c categoriesRepository) List(ctx context.Context) ([]models.Category, error) {
 	query := `SELECT id, name, description, created_at, updated_at FROM categories`
 
 	rows, err := c.db.QueryContext(ctx, query)
 	if err != nil {
-		return []models.Categories{}, configs.NewError(configs.ErrInternalServer, err)
+		return []models.Category{}, configs.NewError(configs.ErrInternalServer, err)
 	}
 	defer rows.Close()
 
-	categories := []models.Categories{}
+	categories := []models.Category{}
 	for rows.Next() {
-		category := models.Categories{}
+		category := models.Category{}
 		err := rows.Scan(
 			&category.ID,
 			&category.Name,
@@ -93,7 +94,7 @@ func (c categoriesRepository) List(ctx context.Context) ([]models.Categories, er
 			&category.UpdatedAt,
 		)
 		if err != nil {
-			return []models.Categories{}, configs.NewError(configs.ErrInternalServer, err)
+			return []models.Category{}, configs.NewError(configs.ErrInternalServer, err)
 		}
 
 		categories = append(categories, category)
@@ -102,12 +103,12 @@ func (c categoriesRepository) List(ctx context.Context) ([]models.Categories, er
 	return categories, nil
 }
 
-func (c categoriesRepository) Update(ctx context.Context, products models.Products) (models.Products, error) {
+func (c categoriesRepository) Update(ctx context.Context, products models.Product) (models.Product, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (c categoriesRepository) Delete(ctx context.Context, products models.Products) (models.Products, error) {
+func (c categoriesRepository) Delete(ctx context.Context, products models.Product) (models.Product, error) {
 	//TODO implement me
 	panic("implement me")
 }

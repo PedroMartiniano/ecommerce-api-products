@@ -26,7 +26,7 @@ func (p *CategoriesController) CreateHandler(c *gin.Context) {
 		return
 	}
 
-	category := models.Categories{
+	category := models.Category{
 		Name:        request.Name,
 		Description: request.Description,
 	}

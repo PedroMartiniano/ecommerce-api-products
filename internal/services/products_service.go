@@ -22,10 +22,10 @@ func NewProductsService(userRepository pr.IProductsRepository, stocksRepository 
 	}
 }
 
-func (p *ProductsService) CreateProductExecute(c context.Context, product models.Products) (models.Products, error) {
+func (p *ProductsService) CreateProductExecute(c context.Context, product models.Product) (models.Product, error) {
 	newProduct, err := p.productsRepository.Create(c, product)
 
-	p.stocksRepository.Create(c, models.Stocks{
+	p.stocksRepository.Create(c, models.Stock{
 		ProductID: newProduct.ID,
 		Quantity:  product.Quantity,
 	})
@@ -33,19 +33,19 @@ func (p *ProductsService) CreateProductExecute(c context.Context, product models
 	return newProduct, err
 }
 
-func (p *ProductsService) ListProductsExecute(c context.Context) ([]models.Products, error) {
+func (p *ProductsService) ListProductsExecute(c context.Context) ([]models.Product, error) {
 	products, err := p.productsRepository.List(c)
 
 	return products, err
 }
 
-func (p *ProductsService) GetProductByIDHandler(c context.Context, id string) (models.Products, error) {
+func (p *ProductsService) GetProductByIDHandler(c context.Context, id string) (models.Product, error) {
 	product, err := p.productsRepository.FindById(c, id)
 
 	return product, err
 }
 
-func (p *ProductsService) UpdateProductHandler(c context.Context, product models.Products) (models.Products, error) {
+func (p *ProductsService) UpdateProductHandler(c context.Context, product models.Product) (models.Product, error) {
 	newProduct, err := p.productsRepository.Update(c, product)
 
 	return newProduct, err

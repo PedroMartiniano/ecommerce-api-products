@@ -4,5 +4,8 @@ default:
 docs:
 	cd internal && swag init -g ../cmd/api/main.go
 
+all:
+	@make docs && make
+
 new_migration:
 	migrate create -ext sql -dir internal/migrations -seq $(name)

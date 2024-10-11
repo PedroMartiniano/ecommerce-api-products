@@ -7,9 +7,9 @@ import (
 )
 
 type IProductsRepository interface {
-	Create(context.Context, models.Products) (models.Products, error)
-	FindById(context.Context, string) (models.Products, error)
-	List(context.Context) ([]models.Products, error)
-	Update(context.Context, models.Products) (models.Products, error)
+	Create(context.Context, models.Product) (models.Product, error)
+	FindById(context.Context, string) (models.Product, error)
+	List(context.Context) ([]models.Product, error)
+	Update(context.Context, models.Product) (models.Product, error)
 	Delete(context.Context, string) error
 }

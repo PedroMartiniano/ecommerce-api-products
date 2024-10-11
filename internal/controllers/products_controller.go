@@ -27,7 +27,7 @@ func (p *ProductsController) CreateProductHandler(c *gin.Context) {
 		return
 	}
 
-	product := models.Products{
+	product := models.Product{
 		Name:        request.Name,
 		Description: request.Description,
 		Price:       request.Price,

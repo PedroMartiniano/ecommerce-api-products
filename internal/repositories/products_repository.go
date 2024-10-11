@@ -4,11 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
+
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/configs"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/models"
 	pr "github.com/PedroMartiniano/ecommerce-api-products/internal/ports/irepositories"
 	"github.com/google/uuid"
-	"time"
 )
 
 type productsRepository struct {
@@ -21,7 +22,7 @@ func NewProductsRepository(db *sql.DB) pr.IProductsRepository {
 	}
 }
 
-func (p productsRepository) Create(ctx context.Context, product models.Products) (models.Products, error) {
+func (p productsRepository) Create(ctx context.Context, product models.Product) (models.Product, error) {
 	query := `INSERT INTO products(id, name, description, price, category_id, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6, $7);`
 
 	product.CreatedAt = time.Now()
@@ -41,18 +42,18 @@ func (p productsRepository) Create(ctx context.Context, product models.Products)
 		product.UpdatedAt,
 	)
 	if err != nil {
-		return models.Products{}, configs.NewError(configs.ErrInternalServer, err)
+		return models.Product{}, configs.NewError(configs.ErrInternalServer, err)
 	}
 
 	return product, nil
 }
 
-func (p productsRepository) FindById(ctx context.Context, id string) (models.Products, error) {
+func (p productsRepository) FindById(ctx context.Context, id string) (models.Product, error) {
 	query := `SELECT p.id, p.name, p.description, p.price, p.category_id, p.created_at, p.updated_at, s.quantity FROM products p INNER JOIN stocks s ON (p.id = s.product_id) WHERE p.id = $1;`
 
 	row := p.db.QueryRowContext(ctx, query, id)
 
-	product := models.Products{}
+	product := models.Product{}
 
 	err := row.Scan(
 		&product.ID,
@@ -66,27 +67,27 @@ func (p productsRepository) FindById(ctx context.Context, id string) (models.Pro
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return models.Products{}, configs.NewError(configs.ErrNotFound, err)
+			return models.Product{}, configs.NewError(configs.ErrNotFound, err)
 		}
-		return models.Products{}, configs.NewError(configs.ErrInternalServer, err)
+		return models.Product{}, configs.NewError(configs.ErrInternalServer, err)
 	}
 
 	return product, nil
 }
 
-func (p productsRepository) List(ctx context.Context) ([]models.Products, error) {
+func (p productsRepository) List(ctx context.Context) ([]models.Product, error) {
 	query := `SELECT p.id, p.name, p.description, p.price, p.category_id, p.created_at, p.updated_at, s.quantity FROM products p INNER JOIN stocks s ON (p.id = s.product_id);`
 
 	rows, err := p.db.QueryContext(ctx, query)
 	if err != nil {
-		return []models.Products{}, configs.NewError(configs.ErrInternalServer, err)
+		return []models.Product{}, configs.NewError(configs.ErrInternalServer, err)
 	}
 	defer rows.Close()
 
-	products := []models.Products{}
+	products := []models.Product{}
 
 	for rows.Next() {
-		product := models.Products{}
+		product := models.Product{}
 		err := rows.Scan(
 			&product.ID,
 			&product.Name,
@@ -98,7 +99,7 @@ func (p productsRepository) List(ctx context.Context) ([]models.Products, error)
 			&product.Quantity,
 		)
 		if err != nil {
-			return []models.Products{}, configs.NewError(configs.ErrInternalServer, err)
+			return []models.Product{}, configs.NewError(configs.ErrInternalServer, err)
 		}
 
 		products = append(products, product)
@@ -107,7 +108,7 @@ func (p productsRepository) List(ctx context.Context) ([]models.Products, error)
 	return products, nil
 }
 
-func (p productsRepository) Update(ctx context.Context, product models.Products) (models.Products, error) {
+func (p productsRepository) Update(ctx context.Context, product models.Product) (models.Product, error) {
 	query := `UPDATE products SET name = $1, description = $2, price = $3, category_id = $4, updated_at = $5 WHERE id = $6;`
 
 	product.UpdatedAt = time.Now()
@@ -123,7 +124,7 @@ func (p productsRepository) Update(ctx context.Context, product models.Products)
 		product.ID,
 	)
 	if err != nil {
-		return models.Products{}, configs.NewError(configs.ErrInternalServer, err)
+		return models.Product{}, configs.NewError(configs.ErrInternalServer, err)
 	}
 
 	return product, nil

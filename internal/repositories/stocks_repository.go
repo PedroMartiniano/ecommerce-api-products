@@ -21,7 +21,7 @@ func NewStocksRepository(db *sql.DB) pr.IStocksRepository {
 	}
 }
 
-func (s *StocksRepository) Create(ctx context.Context, stock models.Stocks) (models.Stocks, error) {
+func (s *StocksRepository) Create(ctx context.Context, stock models.Stock) (models.Stock, error) {
 	query := `INSERT INTO stocks (id, product_id, quantity, updated_at) VALUES ($1, $2, $3, $4);`
 
 	stock.UpdatedAt = time.Now()
@@ -37,13 +37,13 @@ func (s *StocksRepository) Create(ctx context.Context, stock models.Stocks) (mod
 		stock.UpdatedAt,
 	)
 	if err != nil {
-		return models.Stocks{}, configs.NewError(configs.ErrInternalServer, err)
+		return models.Stock{}, configs.NewError(configs.ErrInternalServer, err)
 	}
 
 	return stock, nil
 }
 
-func (s *StocksRepository) Update(ctx context.Context, stock models.Stocks) (models.Stocks, error) {
+func (s *StocksRepository) Update(ctx context.Context, stock models.Stock) (models.Stock, error) {
 	query := `UPDATE stocks SET quantity = $1, updated_at = $2 WHERE product_id = $3;`
 
 	stock.UpdatedAt = time.Now()
@@ -56,7 +56,7 @@ func (s *StocksRepository) Update(ctx context.Context, stock models.Stocks) (mod
 		stock.ProductID,
 	)
 	if err != nil {
-		return models.Stocks{}, configs.NewError(configs.ErrInternalServer, err)
+		return models.Stock{}, configs.NewError(configs.ErrInternalServer, err)
 	}
 
 	return stock, nil
