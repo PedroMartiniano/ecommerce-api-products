@@ -3,8 +3,9 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/PedroMartiniano/ecommerce-api-products/internal/models"
-	"github.com/PedroMartiniano/ecommerce-api-products/internal/services"
+	"github.com/PedroMartiniano/ecommerce-api-products/internal/application/services"
+	"github.com/PedroMartiniano/ecommerce-api-products/internal/domain/dto"
+	"github.com/PedroMartiniano/ecommerce-api-products/internal/domain/entities"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +28,7 @@ func (p *ProductsController) CreateProductHandler(c *gin.Context) {
 		return
 	}
 
-	product := models.Product{
+	product := entities.Product{
 		Name:        request.Name,
 		Description: request.Description,
 		Price:       request.Price,
@@ -127,4 +128,47 @@ func (p *ProductsController) DeleteProductHandler(c *gin.Context) {
 	}
 
 	sendSuccess(c, http.StatusOK, "Product deleted successfully")
+}
+
+func (p *ProductsController) GetProductStockHandler(c *gin.Context) {
+	id := c.Param("id")
+
+	stock, err := p.productsService.GetProductStockHandler(c.Request.Context(), id)
+	if err != nil {
+		code, message := httpError(err)
+		sendError(c, code, message)
+		return
+	}
+
+	sendSuccess(c, http.StatusOK, stock)
+}
+
+func (p *ProductsController) UpdateProductStockHandler(c *gin.Context) {
+	var request updateProductStockRequest
+
+	if err := c.BindJSON(&request); err != nil {
+		sendError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	productID := c.Param("id")
+	if productID == "" {
+		sendError(c, http.StatusBadRequest, "param 'id' is required")
+		return
+	}
+
+	updateProductStock := dto.UpdateProductStock{
+		ProductID: productID,
+		Quantity:  request.Quantity,
+		Operation: request.Operation,
+	}
+
+	stock, err := p.productsService.UpdateProductStockHandler(c.Request.Context(), updateProductStock)
+	if err != nil {
+		code, message := httpError(err)
+		sendError(c, code, message)
+		return
+	}
+
+	sendSuccess(c, http.StatusOK, stock)
 }

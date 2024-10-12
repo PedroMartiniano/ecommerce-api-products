@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/PedroMartiniano/ecommerce-api-products/internal/adapters"
-	"github.com/PedroMartiniano/ecommerce-api-products/internal/controllers"
+	"github.com/PedroMartiniano/ecommerce-api-products/internal/infra/adapters"
+	"github.com/PedroMartiniano/ecommerce-api-products/internal/infra/http/controllers"
 	"github.com/gin-gonic/gin"
 )
 

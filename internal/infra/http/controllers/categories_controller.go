@@ -3,8 +3,8 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/PedroMartiniano/ecommerce-api-products/internal/models"
-	"github.com/PedroMartiniano/ecommerce-api-products/internal/services"
+	"github.com/PedroMartiniano/ecommerce-api-products/internal/application/services"
+	"github.com/PedroMartiniano/ecommerce-api-products/internal/domain/entities"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,7 +26,7 @@ func (p *CategoriesController) CreateHandler(c *gin.Context) {
 		return
 	}
 
-	category := models.Category{
+	category := entities.Category{
 		Name:        request.Name,
 		Description: request.Description,
 	}

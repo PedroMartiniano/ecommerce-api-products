@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/PedroMartiniano/ecommerce-api-products/internal/routes"
+	"github.com/PedroMartiniano/ecommerce-api-products/internal/infra/http/routes"
 
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/configs"
 	"github.com/gin-gonic/gin"

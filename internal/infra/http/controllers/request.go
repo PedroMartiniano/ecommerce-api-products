@@ -19,3 +19,8 @@ type createCategoryRequest struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description" binding:"required"`
 }
+
+type updateProductStockRequest struct {
+	Quantity  int    `json:"quantity" binding:"required"`
+	Operation string `json:"operation" binding:"required"`
+}
