@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"time"
 
 	pr "github.com/PedroMartiniano/ecommerce-api-products/internal/application/ports"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/configs"
@@ -31,7 +30,7 @@ func (p *ProductsService) CreateProductExecute(c context.Context, product entiti
 		return entities.Product{}, configs.NewError(configs.ErrBadRequest, err)
 	}
 
-	stock, err := entities.NewStock("", newProduct.ID, product.Quantity, time.Now())
+	stock, err := entities.NewStock("", newProduct.ID, product.Quantity, nil)
 	if err != nil {
 		return entities.Product{}, configs.NewError(configs.ErrBadRequest, err)
 	}
@@ -73,10 +72,10 @@ func (p *ProductsService) GetProductStockHandler(c context.Context, id string) (
 	stock, err := p.stocksRepository.GetByProductID(c, id)
 
 	return dto.Stock{
-		ID:        stock.ID.GetValue(),
-		ProductID: stock.ProductID.GetValue(),
-		Quantity:  stock.Quantity.GetValue(),
-		UpdatedAt: stock.UpdatedAt,
+		ID:        stock.GetID(),
+		ProductID: stock.GetProductID(),
+		Quantity:  stock.GetQuantity(),
+		UpdatedAt: stock.GetUpdatedAt(),
 	}, err
 }
 
@@ -102,9 +101,9 @@ func (p *ProductsService) UpdateProductStockHandler(c context.Context, updateDTO
 	}
 
 	return dto.Stock{
-		ID:        updatedStock.ID.GetValue(),
-		ProductID: updatedStock.ProductID.GetValue(),
-		Quantity:  updatedStock.Quantity.GetValue(),
-		UpdatedAt: updatedStock.UpdatedAt,
+		ID:        updatedStock.GetID(),
+		ProductID: updatedStock.GetProductID(),
+		Quantity:  updatedStock.GetQuantity(),
+		UpdatedAt: updatedStock.GetUpdatedAt(),
 	}, err
 }

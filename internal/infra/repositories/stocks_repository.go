@@ -26,10 +26,10 @@ func (s *StocksRepository) Create(ctx context.Context, stock entities.Stock) (en
 	_, err := s.db.ExecContext(
 		ctx,
 		query,
-		stock.ID.GetValue(),
-		stock.ProductID.GetValue(),
-		stock.Quantity.GetValue(),
-		stock.UpdatedAt,
+		stock.GetID(),
+		stock.GetProductID(),
+		stock.GetQuantity(),
+		stock.GetUpdatedAt(),
 	)
 	if err != nil {
 		return entities.Stock{}, configs.NewError(configs.ErrInternalServer, err)
@@ -44,9 +44,9 @@ func (s *StocksRepository) Update(ctx context.Context, stock entities.Stock) (en
 	_, err := s.db.ExecContext(
 		ctx,
 		query,
-		stock.Quantity.GetValue(),
-		stock.UpdatedAt,
-		stock.ProductID.GetValue(),
+		stock.GetQuantity(),
+		stock.GetUpdatedAt(),
+		stock.GetProductID(),
 	)
 	if err != nil {
 		return entities.Stock{}, configs.NewError(configs.ErrInternalServer, err)
@@ -89,7 +89,7 @@ func (s *StocksRepository) GetByProductID(c context.Context, productID string) (
 		return entities.Stock{}, configs.NewError(configs.ErrInternalServer, err)
 	}
 
-	stock, err = entities.NewStock(id, stockProductID, quantity, updatedAt)
+	stock, err = entities.NewStock(id, stockProductID, quantity, &updatedAt)
 	if err != nil {
 		return entities.Stock{}, configs.NewError(configs.ErrBadRequest, err)
 	}

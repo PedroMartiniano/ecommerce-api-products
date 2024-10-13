@@ -8,4 +8,4 @@ all:
 	@make docs && make
 
 new_migration:
-	migrate create -ext sql -dir internal/migrations -seq $(name)
+	migrate create -ext sql -dir internal/infra/migrations -seq $(name)
