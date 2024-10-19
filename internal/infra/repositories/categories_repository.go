@@ -9,7 +9,6 @@ import (
 	pr "github.com/PedroMartiniano/ecommerce-api-products/internal/application/ports"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/configs"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/domain/entities"
-	"github.com/google/uuid"
 )
 
 type categoriesRepository struct {
@@ -25,19 +24,14 @@ func NewCategoriesRepository(db *sql.DB) pr.ICategoriesRepository {
 func (c categoriesRepository) Create(ctx context.Context, category entities.Category) (entities.Category, error) {
 	query := `INSERT INTO categories(id, name, description, created_at, updated_at) VALUES($1, $2, $3, $4, $5)`
 
-	category.CreatedAt = time.Now()
-	category.UpdatedAt = time.Now()
-	uuid, _ := uuid.NewV7()
-	category.ID = uuid.String()
-
 	_, err := c.db.ExecContext(
 		ctx,
 		query,
-		category.ID,
-		category.Name,
-		category.Description,
-		category.CreatedAt,
-		category.UpdatedAt,
+		category.GetID(),
+		category.GetName(),
+		category.GetDescription(),
+		category.GetCreatedAt(),
+		category.GetUpdatedAt(),
 	)
 	if err != nil {
 		return entities.Category{}, configs.NewError(configs.ErrInternalServer, err)
@@ -55,19 +49,24 @@ func (c categoriesRepository) FindById(ctx context.Context, id string) (entities
 		id,
 	)
 
-	category := entities.Category{}
-
+	var createdAt, updatedAt time.Time
+	var categoryID, name, description string
 	err := row.Scan(
-		&category.ID,
-		&category.Name,
-		&category.Description,
-		&category.CreatedAt,
-		&category.UpdatedAt,
+		&categoryID,
+		&name,
+		&description,
+		&createdAt,
+		&updatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return entities.Category{}, configs.NewError(configs.ErrNotFound, err)
 		}
+		return entities.Category{}, configs.NewError(configs.ErrInternalServer, err)
+	}
+
+	category, err := entities.NewCategory(categoryID, name, description, &createdAt, &updatedAt)
+	if err != nil {
 		return entities.Category{}, configs.NewError(configs.ErrInternalServer, err)
 	}
 
@@ -85,14 +84,20 @@ func (c categoriesRepository) List(ctx context.Context) ([]entities.Category, er
 
 	categories := []entities.Category{}
 	for rows.Next() {
-		category := entities.Category{}
+		var createdAt, updatedAt time.Time
+		var categoryID, name, description string
 		err := rows.Scan(
-			&category.ID,
-			&category.Name,
-			&category.Description,
-			&category.CreatedAt,
-			&category.UpdatedAt,
+			&categoryID,
+			&name,
+			&description,
+			&createdAt,
+			&updatedAt,
 		)
+		if err != nil {
+			return []entities.Category{}, configs.NewError(configs.ErrInternalServer, err)
+		}
+
+		category, err := entities.NewCategory(categoryID, name, description, &createdAt, &updatedAt)
 		if err != nil {
 			return []entities.Category{}, configs.NewError(configs.ErrInternalServer, err)
 		}

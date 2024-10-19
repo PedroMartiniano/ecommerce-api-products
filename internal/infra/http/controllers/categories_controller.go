@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/application/services"
-	"github.com/PedroMartiniano/ecommerce-api-products/internal/domain/entities"
+	"github.com/PedroMartiniano/ecommerce-api-products/internal/domain/dto"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +18,18 @@ func NewCategoriesController(categoriesService *services.CategoriesService) *Cat
 	}
 }
 
+// @BasePath /categories
+// @Summary Create an product category
+// @Security BearerAuth
+// @Tags Categories
+// @Accept json
+// @Produce json
+// @Param request body createCategoryRequest true "Request Body"
+// @Success 201 {object} categoryResponse1
+// @Failure 401 {object} errorResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /categories/ [post]
 func (p *CategoriesController) CreateHandler(c *gin.Context) {
 	var request createCategoryRequest
 
@@ -26,7 +38,7 @@ func (p *CategoriesController) CreateHandler(c *gin.Context) {
 		return
 	}
 
-	category := entities.Category{
+	category := dto.Category{
 		Name:        request.Name,
 		Description: request.Description,
 	}
@@ -41,6 +53,16 @@ func (p *CategoriesController) CreateHandler(c *gin.Context) {
 	sendSuccess(c, http.StatusCreated, newCategory)
 }
 
+// @BasePath /categories
+// @Summary List all Products Categories
+// @Tags Categories
+// @Accept json
+// @Produce json
+// @Success 200 {object} categoryResponse2
+// @Failure 401 {object} errorResponse
+// @Failure 400 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /categories/ [get]
 func (p *CategoriesController) ListHandler(c *gin.Context) {
 	categories, err := p.categoriesService.ListCategoriesExecute(c.Request.Context())
 	if err != nil {

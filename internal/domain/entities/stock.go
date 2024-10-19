@@ -7,10 +7,10 @@ import (
 )
 
 type Stock struct {
-	id        vo.UUID     `json:"id"`
-	productID vo.UUID     `json:"product_id"`
-	quantity  vo.Quantity `json:"quantity"`
-	updatedAt time.Time   `json:"updated_at"`
+	ID        vo.UUID     `json:"id"`
+	ProductID vo.UUID     `json:"product_id"`
+	Quantity  vo.Quantity `json:"quantity"`
+	UpdatedAt time.Time   `json:"updated_at"`
 }
 
 // empty string for id if you're creating a new stock
@@ -21,55 +21,56 @@ func NewStock(id string, productID string, quantity int, updatedAt *time.Time) (
 	}
 
 	if updatedAt == nil {
-		updatedAt = new(time.Time)
+		now := time.Now()
+		updatedAt = &now
 	}
 
 	return Stock{
-		id:        vo.NewUUID(id),
-		productID: vo.NewUUID(productID),
-		quantity:  quantityVO,
-		updatedAt: *updatedAt,
+		ID:        vo.NewUUID(id),
+		ProductID: vo.NewUUID(productID),
+		Quantity:  quantityVO,
+		UpdatedAt: *updatedAt,
 	}, nil
 }
 
 func (s *Stock) Add(quantity int) error {
-	newValue := s.quantity.GetValue() + quantity
+	newValue := s.Quantity.GetValue() + quantity
 	newQuantity, err := vo.NewQuantity(newValue)
 	if err != nil {
 		return err
 	}
 
-	s.quantity = newQuantity
-	s.updatedAt = time.Now()
+	s.Quantity = newQuantity
+	s.UpdatedAt = time.Now()
 
 	return nil
 }
 
 func (s *Stock) Subtract(quantity int) error {
-	newValue := s.quantity.GetValue() - quantity
+	newValue := s.Quantity.GetValue() - quantity
 	newQuantity, err := vo.NewQuantity(newValue)
 	if err != nil {
 		return err
 	}
 
-	s.quantity = newQuantity
-	s.updatedAt = time.Now()
+	s.Quantity = newQuantity
+	s.UpdatedAt = time.Now()
 
 	return nil
 }
 
 func (s *Stock) GetID() string {
-	return s.id.GetValue()
+	return s.ID.GetValue()
 }
 
 func (s *Stock) GetProductID() string {
-	return s.productID.GetValue()
+	return s.ProductID.GetValue()
 }
 
 func (s *Stock) GetQuantity() int {
-	return s.quantity.GetValue()
+	return s.Quantity.GetValue()
 }
 
 func (s *Stock) GetUpdatedAt() time.Time {
-	return s.updatedAt
+	return s.UpdatedAt
 }

@@ -1,4 +1,449 @@
+definitions:
+  controllers.categoryResponse1:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Category'
+      success:
+        type: boolean
+    type: object
+  controllers.categoryResponse2:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.Category'
+        type: array
+      success:
+        type: boolean
+    type: object
+  controllers.createCategoryRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - description
+    - name
+    type: object
+  controllers.createProductRequest:
+    properties:
+      category_id:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: integer
+    required:
+    - category_id
+    - description
+    - name
+    - price
+    - quantity
+    type: object
+  controllers.errorResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  controllers.productResponse1:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Product'
+      success:
+        type: boolean
+    type: object
+  controllers.productResponse2:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.Product'
+        type: array
+      success:
+        type: boolean
+    type: object
+  controllers.productResponse3:
+    properties:
+      data:
+        type: string
+      success:
+        type: boolean
+    type: object
+  controllers.stockResponse1:
+    properties:
+      data:
+        $ref: '#/definitions/dto.Stock'
+      success:
+        type: boolean
+    type: object
+  controllers.updateProductRequest:
+    properties:
+      category_id:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+    type: object
+  controllers.updateProductStockRequest:
+    properties:
+      operation:
+        type: string
+      quantity:
+        type: integer
+    required:
+    - operation
+    - quantity
+    type: object
+  dto.Category:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.Product:
+    properties:
+      category_id:
+        type: string
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  dto.Stock:
+    properties:
+      id:
+        type: string
+      product_id:
+        type: string
+      quantity:
+        type: integer
+      updated_at:
+        type: string
+    type: object
 info:
   contact: {}
-paths: {}
+paths:
+  /categories/:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.categoryResponse2'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+      summary: List all Products Categories
+      tags:
+      - Categories
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.createCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controllers.categoryResponse1'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create an product category
+      tags:
+      - Categories
+  /products/:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.productResponse1'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+      summary: List all products
+      tags:
+      - Products
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.createProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/controllers.productResponse1'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create an product
+      tags:
+      - Products
+  /products/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.productResponse3'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a product by ID
+      tags:
+      - Products
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.productResponse2'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+      summary: Get a product by ID
+      tags:
+      - Products
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.updateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.productResponse1'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: update a product by ID
+      tags:
+      - Products
+  /products/{id}/stock:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.stockResponse1'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+      summary: Get a product stock by productID
+      tags:
+      - Stocks
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Product ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.updateProductStockRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controllers.stockResponse1'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/controllers.errorResponse'
+      summary: Update a product stock
+      tags:
+      - Stocks
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

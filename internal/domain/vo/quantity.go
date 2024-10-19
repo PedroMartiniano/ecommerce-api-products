@@ -8,7 +8,7 @@ type Quantity struct {
 
 func NewQuantity(value int) (Quantity, error) {
 	if value < 0 {
-		return Quantity{}, errors.New("quantity cannot be negative")
+		return Quantity{}, errors.New("unavailable quantity")
 	}
 
 	return Quantity{

@@ -16,7 +16,7 @@ WORKDIR /app
 
 COPY --from=builder /app/main .
 COPY --from=builder /app/cmd/api/.env .
-COPY --from=builder /app/internal/migrations migrations
+COPY --from=builder /app/internal/infra/migrations migrations
 
 
 CMD ["./main"]

@@ -24,37 +24,87 @@ func NewProductsService(userRepository pr.IProductsRepository, stocksRepository 
 	}
 }
 
-func (p *ProductsService) CreateProductExecute(c context.Context, product entities.Product) (entities.Product, error) {
-	newProduct, err := p.productsRepository.Create(c, product)
+func (p *ProductsService) CreateProductExecute(c context.Context, product dto.Product) (dto.Product, error) {
+	productEntity, err := entities.NewProduct("", product.Name, product.Description, product.CategoryID, product.Quantity, product.Price, nil, nil)
 	if err != nil {
-		return entities.Product{}, configs.NewError(configs.ErrBadRequest, err)
+		return dto.Product{}, configs.NewError(configs.ErrBadRequest, err)
 	}
 
-	stock, err := entities.NewStock("", newProduct.ID, product.Quantity, nil)
+	newProduct, err := p.productsRepository.Create(c, productEntity)
 	if err != nil {
-		return entities.Product{}, configs.NewError(configs.ErrBadRequest, err)
+		return dto.Product{}, configs.NewError(configs.ErrBadRequest, err)
+	}
+
+	stock, err := entities.NewStock("", newProduct.ID.GetValue(), product.Quantity, nil)
+	if err != nil {
+		return dto.Product{}, configs.NewError(configs.ErrBadRequest, err)
 	}
 	p.stocksRepository.Create(c, stock)
 
-	return newProduct, err
+	return dto.Product{
+		ID:          newProduct.GetID(),
+		Name:        newProduct.GetName(),
+		Description: newProduct.GetDescription(),
+		CategoryID:  newProduct.GetCategoryID(),
+		Quantity:    newProduct.GetQuantity(),
+		Price:       newProduct.GetPrice(),
+		CreatedAt:   newProduct.GetCreatedAt(),
+		UpdatedAt:   newProduct.GetUpdatedAt(),
+	}, err
 }
 
-func (p *ProductsService) ListProductsExecute(c context.Context) ([]entities.Product, error) {
+func (p *ProductsService) ListProductsExecute(c context.Context) ([]dto.Product, error) {
 	products, err := p.productsRepository.List(c)
 
-	return products, err
+	var productsDTO []dto.Product
+	for _, product := range products {
+		productsDTO = append(productsDTO, dto.Product{
+			ID:          product.GetID(),
+			Name:        product.GetName(),
+			Description: product.GetDescription(),
+			CategoryID:  product.GetCategoryID(),
+			Quantity:    product.GetQuantity(),
+			Price:       product.GetPrice(),
+			CreatedAt:   product.GetCreatedAt(),
+			UpdatedAt:   product.GetUpdatedAt(),
+		})
+	}
+
+	return productsDTO, err
 }
 
-func (p *ProductsService) GetProductByIDHandler(c context.Context, id string) (entities.Product, error) {
+func (p *ProductsService) GetProductByIDHandler(c context.Context, id string) (dto.Product, error) {
 	product, err := p.productsRepository.FindById(c, id)
 
-	return product, err
+	return dto.Product{
+		ID:          product.GetID(),
+		Name:        product.GetName(),
+		Description: product.GetDescription(),
+		CategoryID:  product.GetCategoryID(),
+		Quantity:    product.GetQuantity(),
+		Price:       product.GetPrice(),
+		CreatedAt:   product.GetCreatedAt(),
+		UpdatedAt:   product.GetUpdatedAt(),
+	}, err
 }
 
-func (p *ProductsService) UpdateProductHandler(c context.Context, product entities.Product) (entities.Product, error) {
-	newProduct, err := p.productsRepository.Update(c, product)
+func (p *ProductsService) UpdateProductHandler(c context.Context, product dto.Product) (dto.Product, error) {
+	productEntity, err := entities.NewProduct(product.ID, product.Name, product.Description, product.CategoryID, product.Quantity, product.Price, &product.CreatedAt, &product.UpdatedAt)
+	if err != nil {
+		return dto.Product{}, configs.NewError(configs.ErrBadRequest, err)
+	}
+	newProduct, err := p.productsRepository.Update(c, productEntity)
 
-	return newProduct, err
+	return dto.Product{
+		ID:          newProduct.GetID(),
+		Name:        newProduct.GetName(),
+		Description: newProduct.GetDescription(),
+		CategoryID:  newProduct.GetCategoryID(),
+		Quantity:    newProduct.GetQuantity(),
+		Price:       newProduct.GetPrice(),
+		CreatedAt:   newProduct.GetCreatedAt(),
+		UpdatedAt:   newProduct.GetUpdatedAt(),
+	}, err
 }
 
 func (p *ProductsService) DeleteProductHandler(c context.Context, id string) error {
@@ -90,9 +140,15 @@ func (p *ProductsService) UpdateProductStockHandler(c context.Context, updateDTO
 	}
 
 	if updateDTO.Operation == "add" {
-		stock.Add(updateDTO.Quantity)
+		err := stock.Add(updateDTO.Quantity)
+		if err != nil {
+			return dto.Stock{}, configs.NewError(configs.ErrBadRequest, err)
+		}
 	} else if updateDTO.Operation == "remove" {
-		stock.Subtract(updateDTO.Quantity)
+		err := stock.Subtract(updateDTO.Quantity)
+		if err != nil {
+			return dto.Stock{}, configs.NewError(configs.ErrBadRequest, err)
+		}
 	}
 
 	updatedStock, err := p.stocksRepository.Update(c, stock)

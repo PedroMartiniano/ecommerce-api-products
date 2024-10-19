@@ -9,7 +9,6 @@ import (
 	pr "github.com/PedroMartiniano/ecommerce-api-products/internal/application/ports"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/configs"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/domain/entities"
-	"github.com/google/uuid"
 )
 
 type productsRepository struct {
@@ -25,21 +24,16 @@ func NewProductsRepository(db *sql.DB) pr.IProductsRepository {
 func (p productsRepository) Create(ctx context.Context, product entities.Product) (entities.Product, error) {
 	query := `INSERT INTO products(id, name, description, price, category_id, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6, $7);`
 
-	product.CreatedAt = time.Now()
-	product.UpdatedAt = time.Now()
-	id, _ := uuid.NewV7()
-	product.ID = id.String()
-
 	_, err := p.db.ExecContext(
 		ctx,
 		query,
-		product.ID,
-		product.Name,
-		product.Description,
-		product.Price,
-		product.CategoryID,
-		product.CreatedAt,
-		product.UpdatedAt,
+		product.GetID(),
+		product.GetName(),
+		product.GetDescription(),
+		product.GetPrice(),
+		product.GetCategoryID(),
+		product.GetCreatedAt(),
+		product.GetUpdatedAt(),
 	)
 	if err != nil {
 		return entities.Product{}, configs.NewError(configs.ErrInternalServer, err)
@@ -53,22 +47,39 @@ func (p productsRepository) FindById(ctx context.Context, id string) (entities.P
 
 	row := p.db.QueryRowContext(ctx, query, id)
 
-	product := entities.Product{}
+	var productID, productName, productDescription, productCategoryID string
+	var productCreatedAt, productUpdatedAt time.Time
+	var productPrice float64
+	var productQuantity int
 
 	err := row.Scan(
-		&product.ID,
-		&product.Name,
-		&product.Description,
-		&product.Price,
-		&product.CategoryID,
-		&product.CreatedAt,
-		&product.UpdatedAt,
-		&product.Quantity,
+		&productID,
+		&productName,
+		&productDescription,
+		&productPrice,
+		&productCategoryID,
+		&productCreatedAt,
+		&productUpdatedAt,
+		&productQuantity,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return entities.Product{}, configs.NewError(configs.ErrNotFound, err)
 		}
+		return entities.Product{}, configs.NewError(configs.ErrInternalServer, err)
+	}
+
+	product, err := entities.NewProduct(
+		productID,
+		productName,
+		productDescription,
+		productCategoryID,
+		productQuantity,
+		productPrice,
+		&productCreatedAt,
+		&productUpdatedAt,
+	)
+	if err != nil {
 		return entities.Product{}, configs.NewError(configs.ErrInternalServer, err)
 	}
 
@@ -87,16 +98,33 @@ func (p productsRepository) List(ctx context.Context) ([]entities.Product, error
 	products := []entities.Product{}
 
 	for rows.Next() {
-		product := entities.Product{}
+		var productID, productName, productDescription, productCategoryID string
+		var productCreatedAt, productUpdatedAt time.Time
+		var productPrice float64
+		var productQuantity int
 		err := rows.Scan(
-			&product.ID,
-			&product.Name,
-			&product.Description,
-			&product.Price,
-			&product.CategoryID,
-			&product.CreatedAt,
-			&product.UpdatedAt,
-			&product.Quantity,
+			&productID,
+			&productName,
+			&productDescription,
+			&productPrice,
+			&productCategoryID,
+			&productCreatedAt,
+			&productUpdatedAt,
+			&productQuantity,
+		)
+		if err != nil {
+			return []entities.Product{}, configs.NewError(configs.ErrInternalServer, err)
+		}
+
+		product, err := entities.NewProduct(
+			productID,
+			productName,
+			productDescription,
+			productCategoryID,
+			productQuantity,
+			productPrice,
+			&productCreatedAt,
+			&productUpdatedAt,
 		)
 		if err != nil {
 			return []entities.Product{}, configs.NewError(configs.ErrInternalServer, err)
@@ -116,12 +144,12 @@ func (p productsRepository) Update(ctx context.Context, product entities.Product
 	_, err := p.db.ExecContext(
 		ctx,
 		query,
-		product.Name,
-		product.Description,
-		product.Price,
-		product.CategoryID,
-		product.UpdatedAt,
-		product.ID,
+		product.GetName(),
+		product.GetDescription(),
+		product.GetPrice(),
+		product.GetCategoryID(),
+		product.GetUpdatedAt(),
+		product.GetID(),
 	)
 	if err != nil {
 		return entities.Product{}, configs.NewError(configs.ErrInternalServer, err)
