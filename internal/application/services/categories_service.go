@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	pr "github.com/PedroMartiniano/ecommerce-api-products/internal/application/ports"
+	pr "github.com/PedroMartiniano/ecommerce-api-products/internal/application/ports/repositories"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/domain/dto"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/domain/entities"
 )

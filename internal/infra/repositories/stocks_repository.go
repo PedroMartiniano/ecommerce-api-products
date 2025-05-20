@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"time"
 
-	pr "github.com/PedroMartiniano/ecommerce-api-products/internal/application/ports"
+	pr "github.com/PedroMartiniano/ecommerce-api-products/internal/application/ports/repositories"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/configs"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/domain/entities"
 )

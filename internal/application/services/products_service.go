@@ -3,8 +3,9 @@ package services
 import (
 	"context"
 	"errors"
+	"time"
 
-	pr "github.com/PedroMartiniano/ecommerce-api-products/internal/application/ports"
+	pr "github.com/PedroMartiniano/ecommerce-api-products/internal/application/ports/repositories"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/configs"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/domain/dto"
 	"github.com/PedroMartiniano/ecommerce-api-products/internal/domain/entities"
@@ -15,12 +16,14 @@ var logger = configs.GetLogger()
 type ProductsService struct {
 	productsRepository pr.IProductsRepository
 	stocksRepository   pr.IStocksRepository
+	redisRepository    pr.IRedisRepository
 }
 
-func NewProductsService(userRepository pr.IProductsRepository, stocksRepository pr.IStocksRepository) *ProductsService {
+func NewProductsService(userRepository pr.IProductsRepository, stocksRepository pr.IStocksRepository, redisRepository pr.IRedisRepository) *ProductsService {
 	return &ProductsService{
 		productsRepository: userRepository,
 		stocksRepository:   stocksRepository,
+		redisRepository:    redisRepository,
 	}
 }
 
@@ -39,7 +42,12 @@ func (p *ProductsService) CreateProductExecute(c context.Context, product dto.Pr
 	if err != nil {
 		return dto.Product{}, configs.NewError(configs.ErrBadRequest, err)
 	}
-	p.stocksRepository.Create(c, stock)
+	_, err = p.stocksRepository.Create(c, stock)
+	if err != nil {
+		return dto.Product{}, configs.NewError(configs.ErrBadRequest, err)
+	}
+
+	p.redisRepository.Delete(c, "products:all")
 
 	return dto.Product{
 		ID:          newProduct.GetID(),
@@ -54,9 +62,26 @@ func (p *ProductsService) CreateProductExecute(c context.Context, product dto.Pr
 }
 
 func (p *ProductsService) ListProductsExecute(c context.Context) ([]dto.Product, error) {
+	var productsDTO []dto.Product
+
+	cacheKey := "products:all"
+	err := p.redisRepository.Get(c, cacheKey, &productsDTO)
+	if err != nil {
+		var myErr configs.Error
+		if errors.As(err, &myErr) {
+			if myErr.TypeError() != configs.ErrNotFound {
+				return []dto.Product{}, err
+			}
+			// cache miss
+		}
+	}
+
+	if len(productsDTO) > 0 { // cache hit
+		return productsDTO, nil
+	}
+
 	products, err := p.productsRepository.List(c)
 
-	var productsDTO []dto.Product
 	for _, product := range products {
 		productsDTO = append(productsDTO, dto.Product{
 			ID:          product.GetID(),
@@ -70,22 +95,49 @@ func (p *ProductsService) ListProductsExecute(c context.Context) ([]dto.Product,
 		})
 	}
 
+	p.redisRepository.Set(c, cacheKey, productsDTO, 60*time.Minute)
+
 	return productsDTO, err
 }
 
 func (p *ProductsService) GetProductByIDHandler(c context.Context, id string) (dto.Product, error) {
-	product, err := p.productsRepository.FindById(c, id)
+	var product dto.Product
 
-	return dto.Product{
-		ID:          product.GetID(),
-		Name:        product.GetName(),
-		Description: product.GetDescription(),
-		CategoryID:  product.GetCategoryID(),
-		Quantity:    product.GetQuantity(),
-		Price:       product.GetPrice(),
-		CreatedAt:   product.GetCreatedAt(),
-		UpdatedAt:   product.GetUpdatedAt(),
-	}, err
+	cacheKey := "products:" + id
+	err := p.redisRepository.Get(c, cacheKey, &product)
+	if err != nil {
+		var myErr *configs.Error
+		if errors.As(err, &myErr) {
+			if myErr.TypeError() != configs.ErrNotFound {
+				return dto.Product{}, err
+			}
+			// cache miss
+		}
+	}
+
+	if product.ID != "" { // cache hit
+		return product, nil
+	}
+
+	productEntity, err := p.productsRepository.FindById(c, id)
+	if err != nil {
+		return dto.Product{}, err
+	}
+
+	productDTO := dto.Product{
+		ID:          productEntity.GetID(),
+		Name:        productEntity.GetName(),
+		Description: productEntity.GetDescription(),
+		CategoryID:  productEntity.GetCategoryID(),
+		Quantity:    productEntity.GetQuantity(),
+		Price:       productEntity.GetPrice(),
+		CreatedAt:   productEntity.GetCreatedAt(),
+		UpdatedAt:   productEntity.GetUpdatedAt(),
+	}
+
+	p.redisRepository.Set(c, cacheKey, productDTO, 60*time.Minute)
+
+	return productDTO, err
 }
 
 func (p *ProductsService) UpdateProductHandler(c context.Context, product dto.Product) (dto.Product, error) {
@@ -94,6 +146,9 @@ func (p *ProductsService) UpdateProductHandler(c context.Context, product dto.Pr
 		return dto.Product{}, configs.NewError(configs.ErrBadRequest, err)
 	}
 	newProduct, err := p.productsRepository.Update(c, productEntity)
+
+	p.redisRepository.Delete(c, "products:all")
+	p.redisRepository.Delete(c, "products:"+product.ID)
 
 	return dto.Product{
 		ID:          newProduct.GetID(),
@@ -114,8 +169,14 @@ func (p *ProductsService) DeleteProductHandler(c context.Context, id string) err
 	}
 
 	err = p.productsRepository.Delete(c, id)
+	if err != nil {
+		return err
+	}
 
-	return err
+	p.redisRepository.Delete(c, "products:all")
+	p.redisRepository.Delete(c, "products:"+id)
+
+	return nil
 }
 
 func (p *ProductsService) GetProductStockHandler(c context.Context, id string) (dto.Stock, error) {
@@ -155,6 +216,9 @@ func (p *ProductsService) UpdateProductStockHandler(c context.Context, updateDTO
 	if err != nil {
 		return dto.Stock{}, err
 	}
+
+	p.redisRepository.Delete(c, "products:all")
+	p.redisRepository.Delete(c, "products:"+updateDTO.ProductID)
 
 	return dto.Stock{
 		ID:        updatedStock.GetID(),

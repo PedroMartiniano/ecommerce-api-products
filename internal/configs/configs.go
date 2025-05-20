@@ -2,12 +2,15 @@ package configs
 
 import (
 	"database/sql"
+
 	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
 )
 
 var (
 	logger = newLogger()
 	DB     *sql.DB
+	Redis  *redis.Client
 )
 
 func Init() {
@@ -29,6 +32,8 @@ func Init() {
 		logger.Errorf("Error running migrations, error: %v", err)
 		panic(err)
 	}
+
+	Redis = initRedisClient()
 }
 
 func GetLogger() *Logger {
