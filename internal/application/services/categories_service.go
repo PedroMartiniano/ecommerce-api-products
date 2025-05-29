@@ -37,7 +37,7 @@ func (p *CategoriesService) CreateCategoryExecute(c context.Context, category dt
 func (p *CategoriesService) ListCategoriesExecute(c context.Context) ([]dto.Category, error) {
 	categories, err := p.categoriesRepository.List(c)
 
-	var categoriesDTO []dto.Category
+	categoriesDTO := []dto.Category{}
 	for _, category := range categories {
 		categoriesDTO = append(categoriesDTO, dto.Category{
 			ID:          category.GetID(),

@@ -62,7 +62,7 @@ func (p *ProductsService) CreateProductExecute(c context.Context, product dto.Pr
 }
 
 func (p *ProductsService) ListProductsExecute(c context.Context) ([]dto.Product, error) {
-	var productsDTO []dto.Product
+	productsDTO := []dto.Product{}
 
 	cacheKey := "products:all"
 	err := p.redisRepository.Get(c, cacheKey, &productsDTO)
